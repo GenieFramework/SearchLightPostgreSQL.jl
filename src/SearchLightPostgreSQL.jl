@@ -1,4 +1,4 @@
-module SearchLightPostgres
+module SearchLightPostgreSQL
 
 import Revise
 import LibPQ, DataFrames, Logging
@@ -18,8 +18,8 @@ function SearchLight.column_field_name()
   COLUMN_NAME_FIELD_NAME
 end
 
-const DatabaseHandle = DB_ADAPTER.Connection
-const ResultHandle   = DB_ADAPTER.Result
+const DatabaseHandle = LibPQ.Connection
+const ResultHandle   = LibPQ.Result
 
 const TYPE_MAPPINGS = Dict{Symbol,Symbol}( # Julia / Postgres
   :char       => :CHARACTER,
@@ -122,7 +122,7 @@ julia>
 ```
 """
 function SearchLight.escape_column_name(c::String, conn::DatabaseHandle = CONNECTIONS[end]) :: String
-  """\"$(replace(c, "\""=>"'"))\""""
+  join(["""\"$(replace(cx, "\""=>"'"))\"""" for cx in split(c, '.')], '.')
 end
 
 
@@ -155,7 +155,7 @@ function SearchLight.query(sql::String, conn::DatabaseHandle = CONNECTIONS[end];
   end
 
   if LibPQ.error_message(result) != ""
-    throw(SearchLight.Exceptions.DatabaseAdapterException("$(string(DB_ADAPTER)) error: $(DB_ADAPTER.errstring(result)) [$(DB_ADAPTER.errcode(result))]"))
+    throw(SearchLight.Exceptions.DatabaseAdapterException("$(string(LibPQ)) error: $(LibPQ.errstring(result)) [$(LibPQ.errcode(result))]"))
   end
 
   result |> DataFrames.DataFrame
@@ -175,7 +175,7 @@ function SearchLight.to_store_sql(m::T; conflict_strategy = :error)::String wher
 
   sql = if ! SearchLight.ispersisted(m) || (SearchLight.ispersisted(m) && conflict_strategy == :update)
     pos = findfirst(x -> x == SearchLight.primary_key_name(m), uf)
-    pos != nothing && splice!(uf, pos)
+    pos > 0 && splice!(uf, pos)
 
     fields = SearchLight.SQLColumn(uf)
     vals = join( map(x -> string(SearchLight.to_sqlinput(m, Symbol(x), getfield(m, Symbol(x)))), uf), ", ")
@@ -245,7 +245,7 @@ end
 
 
 function SearchLight.to_from_part(m::Type{T})::String where {T<:SearchLight.AbstractModel}
-  "FROM " * SearchLight.Database.escape_column_name(SearchLight.table_name(m()), CONNECTIONS[end])
+  "FROM " * SearchLight.escape_column_name(SearchLight.table_name(m()), CONNECTIONS[end])
 end
 
 
@@ -279,12 +279,12 @@ end
 
 
 function SearchLight.to_limit_part(l::SearchLight.SQLLimit) :: String
-  l.value != "ALL" ? string("LIMIT ", l) : ""
+  l.value != "ALL" ? string("LIMIT ", string(l)) : ""
 end
 
 
 function SearchLight.to_offset_part(o::Int) :: String
-  o != 0 ? string("OFFSET ", o) : ""
+  o != 0 ? string("OFFSET ", string(o)) : ""
 end
 
 
@@ -299,7 +299,7 @@ function SearchLight.to_having_part(h::Vector{SearchLight.SQLWhereEntity}) :: St
 end
 
 
-function SearchLight.to_join_part(m::Type{T}, joins::Union{Nothing,Vector{SQLJoin{N}}} = nothing)::String where {T<:SearchLight.AbstractModel, N<:Union{Nothing,SearchLight.AbstractModel}}
+function SearchLight.to_join_part(m::Type{T}, joins::Union{Nothing,Vector{SearchLight.SQLJoin{N}}} = nothing)::String where {T<:SearchLight.AbstractModel, N<:Union{Nothing,SearchLight.AbstractModel}}
   joins === nothing && return ""
 
   join(map(x -> string(x), joins), " ")
@@ -315,23 +315,22 @@ end
 
 
 """
-    create_migrations_table(table_name::String)::Bool
+    create_migrations_table(table_name::String)::Nothing
 
 Runs a SQL DB query that creates the table `table_name` with the structure needed to be used as the DB migrations table.
 The table should contain one column, `version`, unique, as a string of maximum 30 chars long.
-Returns `true` on success.
 """
-function SearchLight.Migration.create_migrations_table(table_name::String = SearchLight.config.db_migrations_table_name) :: Bool
-  "CREATE TABLE $table_name (version varchar(30))" |> SearchLight.query
+function SearchLight.Migration.create_migrations_table(table_name::String = SearchLight.config.db_migrations_table_name) :: Nothing
+  SearchLight.query("CREATE TABLE $table_name (version varchar(30))", internal = true)
 
   @info "Created table $table_name"
 
-  true
+  nothing
 end
 
 
 function SearchLight.Migration.create_table(f::Function, name::Union{String,Symbol}, options::Union{String,Symbol} = "") :: Nothing
-  create_table_sql(f, string(name), options) |> SearchLight.query
+  SearchLight.query(create_table_sql(f, string(name), options), internal = true)
 
   nothing
 end
@@ -358,51 +357,79 @@ end
 
 function SearchLight.Migration.add_index(table_name::Union{String,Symbol}, column_name::Union{String,Symbol}; name::Union{String,Symbol} = "", unique::Bool = false, order::Union{String,Symbol} = :none) :: Nothing
   name = isempty(name) ? SearchLight.index_name(table_name, column_name) : name
-  "CREATE $(unique ? "UNIQUE" : "") INDEX $(name) ON $table_name ($column_name)" |> SearchLight.query
+  SearchLight.query("CREATE $(unique ? "UNIQUE" : "") INDEX $(name) ON $table_name ($column_name)", internal = true)
 
   nothing
 end
 
 
 function SearchLight.Migration.add_column(table_name::Union{String,Symbol}, name::Union{String,Symbol}, column_type::Union{String,Symbol}; default::Union{String,Symbol,Nothing} = nothing, limit::Union{Int,Nothing} = nothing, not_null::Bool = false) :: Nothing
-  "ALTER TABLE $table_name ADD $(SearchLight.column(name, column_type, default = default, limit = limit, not_null = not_null))" |> SearchLight.query
+  SearchLight.query("ALTER TABLE $table_name ADD $(SearchLight.column(name, column_type, default = default, limit = limit, not_null = not_null))", internal = true)
 
   nothing
 end
 
 
 function SearchLight.Migration.drop_table(name::Union{String,Symbol}) :: Nothing
-  "DROP TABLE $name" |> SearchLight.query
+  SearchLight.query("DROP TABLE $name", internal = true)
 
   nothing
 end
 
 
 function SearchLight.Migration.remove_column(table_name::Union{String,Symbol}, name::Union{String,Symbol}, options::Union{String,Symbol} = "") :: Nothing
-  "ALTER TABLE $table_name DROP COLUMN $name $options" |> SearchLight.query
+  SearchLight.query("ALTER TABLE $table_name DROP COLUMN $name $options", internal = true)
 
   nothing
 end
 
 
 function SearchLight.Migration.remove_index(name::Union{String,Symbol}, options::Union{String,Symbol} = "") :: Nothing
-  "DROP INDEX $name $options" |> SearchLight.query
+  SearchLight.query("DROP INDEX $name $options", internal = true)
 
   nothing
 end
 
 
 function SearchLight.Migration.create_sequence(name::Union{String,Symbol}) :: Nothing
-  "CREATE SEQUENCE $name" |> SearchLight.query
+  SearchLight.query("CREATE SEQUENCE $name", internal = true)
 
   nothing
 end
 
+function SearchLight.Migration.create_sequence(table_name::Union{String,Symbol}, column_name::Union{String,Symbol}) :: Nothing
+  SearchLight.Migration.create_sequence(sequence_name(table_name, column_name))
+end
 
-function SearchLight.Migration.remove_sequence(name::Union{String,Symbol}, options::Union{String,Symbol} = "") :: Nothing
-  "DROP SEQUENCE $name $options" |> SearchLight.query
+
+function sequence_name(table_name::Union{String,Symbol}, column_name::Union{String,Symbol}) :: String
+  string(table_name) * "__" * "seq_" * string(column_name)
+end
+
+
+function SearchLight.Migration.remove_sequence(name::Union{String,Symbol}, options::Union{String,Symbol}) :: Nothing
+  SearchLight.query("DROP SEQUENCE $name $options", internal = true)
 
   nothing
+end
+
+function SearchLight.Migration.remove_sequence(table_column_name::Tuple{Union{String,Symbol},Union{String,Symbol}}, options::String = "") :: Nothing
+  SearchLight.Migration.remove_sequence(sequence_name(string(table_column_name[1]), string(table_column_name[2])), options)
+end
+
+
+function SearchLight.Migration.constraint(table_name::Union{String,Symbol}, column_name::Union{String,Symbol}) :: String
+  string("CONSTRAINT ", SearchLight.index_name(table_name, column_name))
+end
+
+
+function SearchLight.Migration.nextval(table_name::Union{String,Symbol}, column_name::Union{String,Symbol}) :: String
+  "NEXTVAL('$(sequence_name(table_name, column_name) )')"
+end
+
+
+function SearchLight.Migration.column_id_sequence(table_name::Union{String,Symbol}, column_name::Union{String,Symbol})
+  SearchLight.query("ALTER SEQUENCE $(sequence_name(table_name, column_name)) OWNED BY $table_name.$column_name")
 end
 
 
