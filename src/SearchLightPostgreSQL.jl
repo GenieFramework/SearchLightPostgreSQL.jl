@@ -95,11 +95,8 @@ end
 
 Returns a DataFrame representing schema information for the database table columns associated with `m`.
 """
-function SearchLight.columns(m::T)::DataFrames.DataFrame where {T<:SearchLight.AbstractModel}
-  SearchLight.query(table_columns_sql(SearchLight.table_name(m)), internal = true)
-end
 function SearchLight.columns(m::Type{T})::DataFrames.DataFrame where {T<:SearchLight.AbstractModel}
-  SearchLight.columns(m())
+  SearchLight.query(table_columns_sql(SearchLight.table(m)), internal = true)
 end
 
 
@@ -178,7 +175,7 @@ end
 
 
 function SearchLight.to_store_sql(m::T; conflict_strategy = :error)::String where {T<:SearchLight.AbstractModel}
-  uf = SearchLight.persistable_fields(m)
+  uf = SearchLight.persistable_fields(typeof(m))
 
   sql = if ! SearchLight.ispersisted(m) || (SearchLight.ispersisted(m) && conflict_strategy == :update)
     pos = findfirst(x -> x == SearchLight.primary_key_name(m), uf)
@@ -187,7 +184,7 @@ function SearchLight.to_store_sql(m::T; conflict_strategy = :error)::String wher
     fields = SearchLight.SQLColumn(uf)
     vals = join( map(x -> string(SearchLight.to_sqlinput(m, Symbol(x), getfield(m, Symbol(x)))), uf), ", ")
 
-    "INSERT INTO $(SearchLight.table_name(m)) ( $fields ) VALUES ( $vals )" *
+    "INSERT INTO $(SearchLight.table(typeof(m))) ( $fields ) VALUES ( $vals )" *
         if ( conflict_strategy == :error ) ""
         elseif ( conflict_strategy == :ignore ) " ON CONFLICT DO NOTHING"
         elseif ( conflict_strategy == :update &&
@@ -196,7 +193,7 @@ function SearchLight.to_store_sql(m::T; conflict_strategy = :error)::String wher
         else ""
         end
   else
-    "UPDATE $(SearchLight.table_name(m)) SET $(SearchLight.update_query_part(m))"
+    "UPDATE $(SearchLight.table(typeof(m))) SET $(SearchLight.update_query_part(m))"
   end
 
   return string(sql, " RETURNING $(SearchLight.primary_key_name(m))")
@@ -204,13 +201,12 @@ end
 
 
 function SearchLight.delete_all(m::Type{T}; truncate::Bool = true, reset_sequence::Bool = true, cascade::Bool = false)::Nothing where {T<:SearchLight.AbstractModel}
-  _m::T = m()
   if truncate
-    sql = "TRUNCATE $(SearchLight.table_name(_m))"
+    sql = "TRUNCATE $(SearchLight.table(m))"
     reset_sequence ? sql *= " RESTART IDENTITY" : ""
     cascade ? sql *= " CASCADE" : ""
   else
-    sql = "DELETE FROM $(SearchLight.table_name(_m))"
+    sql = "DELETE FROM $(SearchLight.table(m))"
   end
 
   SearchLight.query(sql)
@@ -222,7 +218,7 @@ end
 function SearchLight.delete(m::T)::T where {T<:SearchLight.AbstractModel}
   SearchLight.ispersisted(m) || throw(SearchLight.Exceptions.NotPersistedException(m))
 
-  "DELETE FROM $(SearchLight.table_name(m)) WHERE $(SearchLight.primary_key_name(m)) = '$(m.id.value)'" |> SearchLight.query
+  "DELETE FROM $(SearchLight.table(typeof(m))) WHERE $(SearchLight.primary_key_name(typeof(m))) = '$(m.id.value)'" |> SearchLight.query
 
   m.id = SearchLight.DbId()
 
@@ -240,9 +236,9 @@ end
 
 
 function SearchLight.update_query_part(m::T)::String where {T<:SearchLight.AbstractModel}
-  update_values = join(map(x -> "$(string(SearchLight.SQLColumn(x))) = $(string(SearchLight.to_sqlinput(m, Symbol(x), getfield(m, Symbol(x)))) )", SearchLight.persistable_fields(m)), ", ")
+  update_values = join(map(x -> "$(string(SearchLight.SQLColumn(x))) = $(string(SearchLight.to_sqlinput(m, Symbol(x), getfield(m, Symbol(x)))) )", SearchLight.persistable_fields(typeof(m))), ", ")
 
-  " $update_values WHERE $(SearchLight.table_name(m)).$(SearchLight.primary_key_name(m)) = '$(m.id.value)'"
+  " $update_values WHERE $(SearchLight.table(typeof(m))).$(SearchLight.primary_key_name(typeof(m))) = '$(m.id.value)'"
 end
 
 
@@ -252,7 +248,7 @@ end
 
 
 function SearchLight.to_from_part(m::Type{T})::String where {T<:SearchLight.AbstractModel}
-  "FROM " * SearchLight.escape_column_name(SearchLight.table_name(m()), SearchLight.connection())
+  "FROM " * SearchLight.escape_column_name(SearchLight.table(m), SearchLight.connection())
 end
 
 
