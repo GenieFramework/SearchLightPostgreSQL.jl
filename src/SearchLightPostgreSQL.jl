@@ -367,7 +367,7 @@ end
 
 
 function SearchLight.Migration.add_column(table_name::Union{String,Symbol}, name::Union{String,Symbol}, column_type::Union{String,Symbol}; default::Union{String,Symbol,Nothing} = nothing, limit::Union{Int,Nothing} = nothing, not_null::Bool = false) :: Nothing
-  SearchLight.query("ALTER TABLE $table_name ADD $(SearchLight.column(name, column_type, default = default, limit = limit, not_null = not_null))", internal = true)
+  SearchLight.query("ALTER TABLE $table_name ADD $(SearchLight.Migration.column(name, column_type, default = default, limit = limit, not_null = not_null))", internal = true)
 
   nothing
 end
