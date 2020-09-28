@@ -1,6 +1,5 @@
 module SearchLightPostgreSQL
 
-import Revise
 import LibPQ, DataFrames, Logging
 import SearchLight
 
