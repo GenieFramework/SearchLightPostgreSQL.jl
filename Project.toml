@@ -12,5 +12,5 @@ SearchLight = "340e8cb6-72eb-11e8-37ce-c97ebeb32050"
 [compat]
 DataFrames = "0.21"
 LibPQ = "1"
-SearchLight = "0"
+SearchLight = "0.20"
 julia = "1"
