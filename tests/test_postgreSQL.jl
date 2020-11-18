@@ -138,7 +138,7 @@ end
     SearchLight.config.db_migrations_folder = "tests/db/migrations"
 
     ## against the convention bind the TestModels from testmodels.jl in the testfolder
-    include(joinpath(@__DIR__,"tests","test_Models.jl"))
+    include(joinpath("tests","test_Models.jl"))
     using .TestModels
 
     ## establish the database-connection
