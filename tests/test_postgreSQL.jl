@@ -1,0 +1,173 @@
+using Pkg
+
+using Test, TestSetExtensions, SafeTestsets
+using SearchLight
+using SearchLightPostgreSQL
+
+
+function prepareDbConnection()
+    connection_file = joinpath("tests","postgres_connection.yml")
+    conn_info_postgres = SearchLight.Configuration.load(connection_file)
+    conn = SearchLight.connect(conn_info_postgres)
+
+    return conn
+end
+
+@testset "Core features PostgreSQL" begin
+
+  @testset "PostgresSQL configuration" begin
+    using SearchLight
+    using SearchLightPostgreSQL
+
+    connection_file = joinpath("tests","postgres_connection.yml")
+
+    conn_info_postgres = SearchLight.Configuration.load(connection_file)
+
+    @test conn_info_postgres["adapter"] == "PostgreSQL"
+    @test conn_info_postgres["host"] == "127.0.0.1"
+    @test conn_info_postgres["password"] == "postgres"
+    @test conn_info_postgres["config"]["log_level"] == ":debug"
+    @test conn_info_postgres["port"] == 5432
+    @test conn_info_postgres["username"] == "postgres"
+    @test conn_info_postgres["config"]["log_queries"] == true
+    @test conn_info_postgres["database"] == "searchlight_tests"
+
+  end;
+
+  @testset "PostgresSQL connection" begin
+    using SearchLight
+    using SearchLightPostgreSQL
+    using LibPQ
+
+    connection_file = joinpath("tests","postgres_connection.yml")
+    conn_info_postgres = SearchLight.Configuration.load(connection_file)
+    conn = SearchLight.connect(conn_info_postgres)
+    
+    infoDB = LibPQ.conninfo(conn)
+
+    keysInfo = Dict{String, String}()
+
+    push!(keysInfo, "host"=>"127.0.0.1")
+    push!(keysInfo, "port"=>"5432")
+    push!(keysInfo, "dbname" => "searchlight_tests")
+    push!(keysInfo, "user"=> "postgres")
+
+    for info in keysInfo
+      infokey = info[1]
+      infoVal = info[2]
+      indexInfo = Base.findfirst(x->x.keyword == infokey, infoDB)
+      valInfo = infoDB[indexInfo].val
+      @test infoVal == valInfo
+    end
+
+    ######## teardwon #######
+    if conn !== nothing
+      SearchLight.disconnect(conn)
+      println("Database connection was disconnected")
+    end
+
+  end;
+
+  @testset "PostgresSQL query" begin
+    using SearchLight
+    using SearchLightPostgreSQL
+    using SearchLight.Configuration
+    using SearchLight.Migrations
+
+    connection_file = joinpath("tests","postgres_connection.yml")
+    conn_info_postgres = SearchLight.Configuration.load(connection_file)
+    conn = SearchLight.connect(conn_info_postgres)
+
+    queryString = string("select table_name from information_schema.tables where table_name = '",SearchLight.SEARCHLIGHT_MIGRATIONS_TABLE_NAME,"'")
+
+    @test isempty(SearchLight.query(queryString,conn)) == true
+    
+    #create migrations_table
+    try
+      SearchLight.Migration.create_migrations_table()
+    catch e
+      nothing 
+    end
+
+    @test Array(SearchLight.query(queryString,conn))[1] == SearchLight.SEARCHLIGHT_MIGRATIONS_TABLE_NAME
+
+    ############# teardown ###############
+    if conn !== nothing
+      ############ drop migrations_table ######################
+      queryString = string("select table_name from information_schema.tables where table_name = '", SearchLight.SEARCHLIGHT_MIGRATIONS_TABLE_NAME , "'" )
+      resQuery = SearchLight.query(queryString)
+      if size(resQuery,1) >  0 
+        queryString = string("drop table ", SearchLight.SEARCHLIGHT_MIGRATIONS_TABLE_NAME)
+        resQuery = SearchLight.query(queryString)
+      end
+      SearchLight.disconnect(conn)
+      println("Database connection was disconnected")
+    end
+
+
+
+
+  end;
+
+end;
+
+@testset "Utility functions PostgreSQL-Adapter" begin
+  using SearchLight
+  using SearchLightPostgreSQL
+  using SearchLight.Migration
+  using SearchLight.Configuration
+
+  connection_file = joinpath("tests","postgres_connection.yml")
+  conn_info_postgres = SearchLight.Configuration.load(connection_file)
+  conn = SearchLight.connect(conn_info_postgres)
+
+  @test SearchLight.Migration.create_migrations_table() == nothing
+  @test SearchLight.Migration.drop_migrations_table() == nothing
+
+
+  if conn !== nothing
+    SearchLight.disconnect(conn)
+    println("Database connection was disconnected")
+  end
+
+end
+
+@testset "Models and tableMigration" begin
+
+    ## against the convention change the migrationfolder to the folder seen below
+    SearchLight.config.db_migrations_folder = "tests/db/migrations"
+
+    ## against the convention bind the TestModels from testmodels.jl in the testfolder
+    include(joinpath(@__DIR__,"tests","test_Models.jl"))
+    using .TestModels
+
+    ## establish the database-connection
+    conn = prepareDbConnection()
+
+    ## create migrations_table
+    SearchLight.Migration.create_migrations_table()
+    
+    ## make Table "Book" 
+    SearchLight.Generator.new_table_migration(Book)
+    SearchLight.Migration.up()
+
+    testBook = Book(title="Faust",author="Goethe")
+
+    @test testBook.author == "Goethe"
+    @test testBook.title == "Faust"
+    @test typeof(testBook) == Book
+    @test isa(testBook, AbstractModel)
+
+    @test testBook |> SearchLight.save == true
+
+    ############ tearDown ##################
+
+    if conn !== nothing
+      SearchLight.Migration.drop_migrations_table()
+      SearchLight.Migration.drop_table("books")
+      SearchLight.disconnect(conn)
+      rm(SearchLight.config.db_migrations_folder,force=true, recursive=true)
+    end 
+
+
+end
