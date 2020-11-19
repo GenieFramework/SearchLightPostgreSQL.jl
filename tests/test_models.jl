@@ -64,18 +64,18 @@ mutable struct Book <: AbstractModel
           # before_save, after_save, on_save, on_find, after_find                       ### CALLBACKS
           # scopes                                                                      ### SCOPES
           )
-  end
+end
 
-    function seed()
-    
-        BillGatesBooks = [
-        ("The Best We Could Do", "Thi Bui"),
-        ("Evicted: Poverty and Profit in the American City", "Matthew Desmond"),
-        ("Believe Me: A Memoir of Love, Death, and Jazz Chickens", "Eddie Izzard"),
-        ("The Sympathizer!", "Viet Thanh Nguyen"),
-        ("Energy and Civilization, A History", "Vaclav Smil")
-        ]
-    
-    end
+  function seed()
+  
+      BillGatesBooks = [
+      ("The Best We Could Do", "Thi Bui"),
+      ("Evicted: Poverty and Profit in the American City", "Matthew Desmond"),
+      ("Believe Me: A Memoir of Love, Death, and Jazz Chickens", "Eddie Izzard"),
+      ("The Sympathizer!", "Viet Thanh Nguyen"),
+      ("Energy and Civilization, A History", "Vaclav Smil")
+      ]
+  
+  end
 
 end

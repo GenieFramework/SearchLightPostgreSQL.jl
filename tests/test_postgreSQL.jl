@@ -171,3 +171,43 @@ end
 
 
 end
+
+
+@testset "Model Store and Query" begin
+  ## against the convention change the migrationfolder to the folder seen below
+  SearchLight.config.db_migrations_folder = "tests/db/migrations"
+
+  ## against the convention bind the TestModels from testmodels.jl in the testfolder
+  include(joinpath("tests","test_Models.jl"))
+  using .TestModels
+
+  ## establish the database-connection
+  conn = prepareDbConnection()
+
+  ## create migrations_table
+  SearchLight.Migration.create_migrations_table()
+  
+  ## make Table "Book" 
+  SearchLight.Generator.new_table_migration(Book)
+  SearchLight.Migration.up()
+
+  testBooks = Book[]
+  
+  for book in TestModels.seed() 
+    push!(testBooks,Book(title=book[1], author=book[2]))
+  end
+
+  @test testBooks |> SearchLight.save == true
+
+  ############ tearDown ##################
+
+  if conn !== nothing
+    SearchLight.Migration.drop_migrations_table()
+    SearchLight.Migration.drop_table("books")
+    SearchLight.disconnect(conn)
+    rm(SearchLight.config.db_migrations_folder,force=true, recursive=true)
+  end 
+
+  
+
+  end
