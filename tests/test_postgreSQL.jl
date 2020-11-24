@@ -193,17 +193,28 @@ end
 
   testBooks = Book[]
   
+  ## prepare the TestBooks
   for book in TestModels.seed() 
     push!(testBooks,Book(title=book[1], author=book[2]))
   end
 
   @test testBooks |> SearchLight.save == true
 
+  booksReturn = SearchLight.find(Book)
+
+  @test size(booksReturn) == (5,)
+
+  ## make Table "Book" 
+  SearchLight.Generator.new_table_migration(BooksWithInterns)
+  SearchLight.Migration.up()
+
+  booksWithInterns = BooksWithInterns[]
+
   ############ tearDown ##################
 
   if conn !== nothing
+    SearchLight.Migration.down()
     SearchLight.Migration.drop_migrations_table()
-    SearchLight.Migration.drop_table("books")
     SearchLight.disconnect(conn)
     rm(SearchLight.config.db_migrations_folder,force=true, recursive=true)
   end 
