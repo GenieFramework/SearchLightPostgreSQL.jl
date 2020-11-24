@@ -204,11 +204,18 @@ end
 
   @test size(booksReturn) == (5,)
 
-  ## make Table "Book" 
-  SearchLight.Generator.new_table_migration(BooksWithInterns)
+  ## make Table "BooksWithInterns" 
+  SearchLight.Generator.new_table_migration(BookWithInterns)
   SearchLight.Migration.up()
 
-  booksWithInterns = BooksWithInterns[]
+  booksWithInterns = BookWithInterns[]
+
+  ## prepare the TestBooks
+  for book in TestModels.seed() 
+    push!(booksWithInterns,BookWithInterns(title=book[1], author=book[2]))
+  end
+
+
 
   ############ tearDown ##################
 

@@ -3,7 +3,7 @@ module TestModels
 using SearchLight
 
 ######## Model from Genie-Searchligth-example-app extracted ############
-export Book
+export Book, BookWithInterns
 
 mutable struct Book <: AbstractModel
 
@@ -69,7 +69,7 @@ end
 mutable struct BookWithInterns <: AbstractModel
 
   ### interns
-  _id::Number
+  _id::DbId
 
   ### FIELDS
   id::DbId
