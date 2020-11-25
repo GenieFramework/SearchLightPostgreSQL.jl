@@ -13,5 +13,5 @@ SearchLight = "340e8cb6-72eb-11e8-37ce-c97ebeb32050"
 TestSetExtensions = "98d24dd4-01ad-11ea-1b02-c9a08f80db04"
 
 [compat]
-DataFrames = "0.20"
+DataFrames = "0.20, 0.21.8"
 julia = "1"

@@ -6,12 +6,13 @@ using SearchLightPostgreSQL
 
 
 function prepareDbConnection()
-    connection_file = joinpath("tests","postgres_connection.yml")
+    connection_file = "postgres_connection.yml"
     conn_info_postgres = SearchLight.Configuration.load(connection_file)
     conn = SearchLight.connect(conn_info_postgres)
 
     return conn
 end
+
 
 @testset "Core features PostgreSQL" begin
 
@@ -174,11 +175,9 @@ end
 
 
 @testset "Model Store and Query" begin
-  ## against the convention change the migrationfolder to the folder seen below
-  SearchLight.config.db_migrations_folder = "tests/db/migrations"
 
   ## against the convention bind the TestModels from testmodels.jl in the testfolder
-  include(joinpath("tests","test_Models.jl"))
+  include("test_Models.jl")
   using .TestModels
 
   ## establish the database-connection
@@ -215,7 +214,9 @@ end
     push!(booksWithInterns,BookWithInterns(title=book[1], author=book[2]))
   end
 
+  testItem = BookWithInterns(author="Alexej Tolstoi", title="Krieg oder Frieden")
 
+  savedTestItem = SearchLight.save!(testItem)
 
   ############ tearDown ##################
 
