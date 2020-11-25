@@ -20,7 +20,7 @@ end
     using SearchLight
     using SearchLightPostgreSQL
 
-    connection_file = joinpath("tests","postgres_connection.yml")
+    connection_file = "postgres_connection.yml"
 
     conn_info_postgres = SearchLight.Configuration.load(connection_file)
 
@@ -40,7 +40,7 @@ end
     using SearchLightPostgreSQL
     using LibPQ
 
-    connection_file = joinpath("tests","postgres_connection.yml")
+    connection_file = "postgres_connection.yml"
     conn_info_postgres = SearchLight.Configuration.load(connection_file)
     conn = SearchLight.connect(conn_info_postgres)
     
@@ -75,7 +75,7 @@ end
     using SearchLight.Configuration
     using SearchLight.Migrations
 
-    connection_file = joinpath("tests","postgres_connection.yml")
+    connection_file = "postgres_connection.yml"
     conn_info_postgres = SearchLight.Configuration.load(connection_file)
     conn = SearchLight.connect(conn_info_postgres)
 
@@ -84,12 +84,8 @@ end
     @test isempty(SearchLight.query(queryString,conn)) == true
     
     #create migrations_table
-    try
-      SearchLight.Migration.create_migrations_table()
-    catch e
-      nothing 
-    end
-
+    SearchLight.Migration.create_migrations_table()
+ 
     @test Array(SearchLight.query(queryString,conn))[1] == SearchLight.SEARCHLIGHT_MIGRATIONS_TABLE_NAME
 
     ############# teardown ###############
@@ -105,9 +101,6 @@ end
       println("Database connection was disconnected")
     end
 
-
-
-
   end;
 
 end;
@@ -118,12 +111,12 @@ end;
   using SearchLight.Migration
   using SearchLight.Configuration
 
-  connection_file = joinpath("tests","postgres_connection.yml")
+  connection_file = "postgres_connection.yml"
   conn_info_postgres = SearchLight.Configuration.load(connection_file)
   conn = SearchLight.connect(conn_info_postgres)
 
-  @test SearchLight.Migration.create_migrations_table() == nothing
-  @test SearchLight.Migration.drop_migrations_table() == nothing
+  @test SearchLight.Migration.create_migrations_table() === nothing
+  @test SearchLight.Migration.drop_migrations_table() === nothing
 
 
   if conn !== nothing
@@ -135,11 +128,8 @@ end
 
 @testset "Models and tableMigration" begin
 
-    ## against the convention change the migrationfolder to the folder seen below
-    SearchLight.config.db_migrations_folder = "tests/db/migrations"
-
     ## against the convention bind the TestModels from testmodels.jl in the testfolder
-    include(joinpath("tests","test_Models.jl"))
+    include("test_Models.jl")
     using .TestModels
 
     ## establish the database-connection
@@ -216,7 +206,7 @@ end
 
   testItem = BookWithInterns(author="Alexej Tolstoi", title="Krieg oder Frieden")
 
-  savedTestItem = SearchLight.save!(testItem)
+  savedTestItem = SearchLight.save(testItem)
 
   ############ tearDown ##################
 
