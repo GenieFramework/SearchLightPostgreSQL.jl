@@ -4,6 +4,7 @@ module TestModels
 
   ######## Model from Genie-Searchligth-example-app extracted ############
   export Book, BookWithInterns
+  export seed, fields_to_store
 
   mutable struct Book <: AbstractModel
 

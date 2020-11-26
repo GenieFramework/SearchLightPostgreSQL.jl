@@ -163,7 +163,6 @@ end
 
 end
 
-
 @testset "Model Store and Query" begin
 
   ## against the convention bind the TestModels from testmodels.jl in the testfolder
@@ -206,17 +205,20 @@ end
 
   testItem = BookWithInterns(author="Alexej Tolstoi", title="Krieg oder Frieden")
 
-  savedTestItem = SearchLight.save(testItem)
+  savedTestItem = SearchLight.save!(testItem)
+  @test savedTestItem !== nothing
 
   ############ tearDown ##################
 
   if conn !== nothing
-    SearchLight.Migration.down()
+  
+    ######## Dropping used tables
     SearchLight.Migration.drop_migrations_table()
+    SearchLight.Migration.drop_table(lowercase("Books"))
+    SearchLight.Migration.drop_table(lowercase("BookWithInterns"))
+
     SearchLight.disconnect(conn)
     rm(SearchLight.config.db_migrations_folder,force=true, recursive=true)
   end 
 
-  
-
-  end
+end
