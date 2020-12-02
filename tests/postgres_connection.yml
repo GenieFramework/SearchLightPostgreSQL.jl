@@ -10,4 +10,8 @@ dev:
 
   config:
     log_queries: true
+<<<<<<< HEAD
     log_level: :debug
+=======
+    log_level: :debug
+>>>>>>> Issue#31

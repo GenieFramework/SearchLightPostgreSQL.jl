@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 using Pkg
 
 using Test, TestSetExtensions, SafeTestsets
@@ -23,6 +24,46 @@ end
     connection_file = "postgres_connection.yml"
 
     conn_info_postgres = SearchLight.Configuration.load(connection_file)
+=======
+using Test, TestSetExtensions, SafeTestsets
+
+module TestSetupTeardown
+
+  using SearchLight
+  using SearchLightPostgreSQL
+
+  export prepareDbConnection, tearDown
+
+  connection_file = "postgres_connection.yml"
+
+  function prepareDbConnection()
+      
+      conn_info_postgres = SearchLight.Configuration.load(connection_file)
+      conn = SearchLight.connect(conn_info_postgres)
+
+      return conn
+  end
+
+  function tearDown(conn)
+    if conn !== nothing
+        ######## Dropping used tables
+
+        SearchLight.disconnect(conn)
+        rm(SearchLight.config.db_migrations_folder,force=true, recursive=true)
+    end
+  end
+
+end
+
+
+@safetestset "Core features PostgreSQL" begin
+    using SearchLight
+    using SearchLightPostgreSQL
+    using Test, TestSetExtensions
+    using Main.TestSetupTeardown
+
+    conn_info_postgres = SearchLight.Configuration.load(TestSetupTeardown.connection_file)
+>>>>>>> Issue#31
 
     @test conn_info_postgres["adapter"] == "PostgreSQL"
     @test conn_info_postgres["host"] == "127.0.0.1"
@@ -33,6 +74,7 @@ end
     @test conn_info_postgres["config"]["log_queries"] == true
     @test conn_info_postgres["database"] == "searchlight_tests"
 
+<<<<<<< HEAD
   end;
 
   @testset "PostgresSQL connection" begin
@@ -43,6 +85,18 @@ end
     connection_file = "postgres_connection.yml"
     conn_info_postgres = SearchLight.Configuration.load(connection_file)
     conn = SearchLight.connect(conn_info_postgres)
+=======
+end;
+
+@safetestset "PostgresSQL connection" begin
+    using SearchLight
+    using SearchLightPostgreSQL
+    using LibPQ
+    using Main.TestSetupTeardown
+
+
+    conn = prepareDbConnection()
+>>>>>>> Issue#31
     
     infoDB = LibPQ.conninfo(conn)
 
@@ -61,6 +115,7 @@ end
       @test infoVal == valInfo
     end
 
+<<<<<<< HEAD
     ######## teardwon #######
     if conn !== nothing
       SearchLight.disconnect(conn)
@@ -222,3 +277,32 @@ end
   end 
 
 end
+=======
+    tearDown(conn)
+
+end;
+
+@safetestset "Saving and Reading with callbacks" begin
+    using SearchLight
+    using SearchLightPostgreSQL
+    using Main.TestSetupTeardown
+    using Dates
+
+    include("test_models.jl")
+    using Main.TestModels
+
+    prepareDbConnection()
+
+    testItem = Callback(title = "testing")
+    SearchLight.Generator.new_table_migration("Callback")
+    SearchLight.Migration.up()
+
+    testItem|>save!
+
+end;
+
+
+
+
+  
+>>>>>>> Issue#31

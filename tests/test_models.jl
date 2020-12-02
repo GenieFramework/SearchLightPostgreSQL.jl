@@ -1,9 +1,16 @@
 module TestModels
 
+<<<<<<< HEAD
   using SearchLight
 
   ######## Model from Genie-Searchligth-example-app extracted ############
   export Book, BookWithInterns
+=======
+  using SearchLight, Dates
+
+  ######## Model from Genie-Searchligth-example-app extracted ############
+  export Callback
+>>>>>>> Issue#31
   export seed, fields_to_store
 
   mutable struct Book <: AbstractModel
@@ -133,6 +140,23 @@ module TestModels
             )
   end
 
+<<<<<<< HEAD
+=======
+  Base.@kwdef mutable struct Callback <: AbstractModel
+    id::DbId = DbId()
+    title::String = ""
+    indicator::Bool = true
+    created_at::String = string(Dates.now())
+    # callbacks
+    before_save::Function = (m::Callback) -> begin
+      @info "Do something before saving"
+    end
+    after_save::Function = (m::Callback) -> begin
+      @info "Do something after saving"
+    end
+  end
+
+>>>>>>> Issue#31
   function seed()
     BillGatesBooks = [
       ("The Best We Could Do", "Thi Bui"),
@@ -143,6 +167,11 @@ module TestModels
     ]
   end
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> Issue#31
 end ### End Module
 
 
