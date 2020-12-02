@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 using Pkg
 
 using Test, TestSetExtensions, SafeTestsets
