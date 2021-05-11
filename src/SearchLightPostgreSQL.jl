@@ -229,7 +229,7 @@ function Base.count(m::Type{T}, q::SearchLight.SQLQuery = SearchLight.SQLQuery()
   count_column = SearchLight.SQLColumn("COUNT(*) AS __cid", raw = true)
   q = SearchLight.clone(q, :columns, push!(q.columns, count_column))
 
-  SearchLight.finddf(m, q)[1, Symbol("__cid")]
+  SearchLight.DataFrame(m, q)[1, Symbol("__cid")]
 end
 
 
