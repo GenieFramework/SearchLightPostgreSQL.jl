@@ -1,7 +1,7 @@
 name = "SearchLightPostgreSQL"
 uuid = "4327cdd6-4902-11ea-0272-430cea0431bd"
 authors = ["Adrian Salceanu <e@essenciary.com>"]
-version = "0.4"
+version = "1"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -10,7 +10,7 @@ Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 SearchLight = "340e8cb6-72eb-11e8-37ce-c97ebeb32050"
 
 [compat]
-DataFrames = "0.22"
+DataFrames = "1"
 LibPQ = "1"
-SearchLight = "0.22"
+SearchLight = "1"
 julia = "1"
