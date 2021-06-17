@@ -84,32 +84,6 @@ end
 
 
 #
-# Utility
-#
-
-
-"""
-    columns{T<:AbstractModel}(m::Type{T})::DataFrames.DataFrame
-    columns{T<:AbstractModel}(m::T)::DataFrames.DataFrame
-
-Returns a DataFrame representing schema information for the database table columns associated with `m`.
-"""
-function SearchLight.columns(m::Type{T})::DataFrames.DataFrame where {T<:SearchLight.AbstractModel}
-  SearchLight.query(table_columns_sql(SearchLight.table(m)), internal = true)
-end
-
-
-"""
-    table_columns_sql(table_name::String)::String
-
-Returns the adapter specific query for SELECTing table columns information corresponding to `table_name`.
-"""
-function table_columns_sql(table_name::String) :: String
-  "SELECT column_name FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = '$table_name'"
-end
-
-
-#
 # Data sanitization
 #
 
@@ -149,13 +123,9 @@ end
 #
 
 
-function SearchLight.query(sql::String, conn::DatabaseHandle = SearchLight.connection(); internal = false) :: DataFrames.DataFrame
-  result = if SearchLight.config.log_queries && ! internal
-    @info sql
-    @time LibPQ.execute(conn, sql)
-  else
-    LibPQ.execute(conn, sql)
-  end
+function SearchLight.query(sql::String, conn::DatabaseHandle = SearchLight.connection()) :: DataFrames.DataFrame
+  @info sql
+  @time result = LibPQ.execute(conn, sql)
 
   if LibPQ.error_message(result) != ""
     throw(SearchLight.Exceptions.DatabaseAdapterException("$(string(LibPQ)) error: $(LibPQ.errstring(result)) [$(LibPQ.errcode(result))]"))
@@ -165,7 +135,7 @@ function SearchLight.query(sql::String, conn::DatabaseHandle = SearchLight.conne
 end
 
 
-function SearchLight.to_find_sql(m::Type{T}, q::SearchLight.SQLQuery, joins::Union{Nothing,Vector{SearchLight.SQLJoin{N}}} = nothing)::String where {T<:SearchLight.AbstractModel, N<:Union{Nothing,SearchLight.AbstractModel}}
+function SearchLight.to_find_sql(m::Type{T}, q::SearchLight.SQLQuery, joins::Union{Nothing,Vector{SearchLight.SQLJoin}} = nothing)::String where {T<:SearchLight.AbstractModel}
   sql::String = ( string("$(SearchLight.to_select_part(m, q.columns, joins)) $(SearchLight.to_from_part(m)) $(SearchLight.to_join_part(m, joins)) $(SearchLight.to_where_part(q.where)) ",
                       "$(SearchLight.to_group_part(q.group)) $(SearchLight.to_having_part(q.having)) $(SearchLight.to_order_part(m, q.order)) ",
                       "$(SearchLight.to_limit_part(q.limit)) $(SearchLight.to_offset_part(q.offset))")) |> strip
@@ -301,7 +271,7 @@ function SearchLight.to_having_part(h::Vector{SearchLight.SQLWhereEntity}) :: St
 end
 
 
-function SearchLight.to_join_part(m::Type{T}, joins::Union{Nothing,Vector{SearchLight.SQLJoin{N}}} = nothing)::String where {T<:SearchLight.AbstractModel, N<:Union{Nothing,SearchLight.AbstractModel}}
+function SearchLight.to_join_part(m::Type{T}, joins::Union{Nothing,Vector{SearchLight.SQLJoin}} = nothing)::String where {T<:SearchLight.AbstractModel}
   joins === nothing && return ""
 
   join(map(x -> string(x), joins), " ")
@@ -323,7 +293,7 @@ Runs a SQL DB query that creates the table `table_name` with the structure neede
 The table should contain one column, `version`, unique, as a string of maximum 30 chars long.
 """
 function SearchLight.Migration.create_migrations_table(table_name::String = SearchLight.config.db_migrations_table_name) :: Nothing
-  SearchLight.query("CREATE TABLE $table_name (version varchar(30))", internal = true)
+  SearchLight.query("CREATE TABLE $table_name (version varchar(30))")
 
   @info "Created table $table_name"
 
@@ -332,7 +302,7 @@ end
 
 
 function SearchLight.Migration.create_table(f::Function, name::Union{String,Symbol}, options::Union{String,Symbol} = "") :: Nothing
-  SearchLight.query(create_table_sql(f, string(name), options), internal = true)
+  SearchLight.query(create_table_sql(f, string(name), options))
 
   nothing
 end
@@ -359,42 +329,42 @@ end
 
 function SearchLight.Migration.add_index(table_name::Union{String,Symbol}, column_name::Union{String,Symbol}; name::Union{String,Symbol} = "", unique::Bool = false, order::Union{String,Symbol} = :none) :: Nothing
   name = isempty(name) ? SearchLight.index_name(table_name, column_name) : name
-  SearchLight.query("CREATE $(unique ? "UNIQUE" : "") INDEX $(name) ON $table_name ($column_name)", internal = true)
+  SearchLight.query("CREATE $(unique ? "UNIQUE" : "") INDEX $(name) ON $table_name ($column_name)")
 
   nothing
 end
 
 
 function SearchLight.Migration.add_column(table_name::Union{String,Symbol}, name::Union{String,Symbol}, column_type::Union{String,Symbol}; default::Union{String,Symbol,Nothing} = nothing, limit::Union{Int,Nothing} = nothing, not_null::Bool = false) :: Nothing
-  SearchLight.query("ALTER TABLE $table_name ADD $(SearchLight.Migration.column(name, column_type, default = default, limit = limit, not_null = not_null))", internal = true)
+  SearchLight.query("ALTER TABLE $table_name ADD $(SearchLight.Migration.column(name, column_type, default = default, limit = limit, not_null = not_null))")
 
   nothing
 end
 
 
 function SearchLight.Migration.drop_table(name::Union{String,Symbol}) :: Nothing
-  SearchLight.query("DROP TABLE $name", internal = true)
+  SearchLight.query("DROP TABLE $name")
 
   nothing
 end
 
 
 function SearchLight.Migration.remove_column(table_name::Union{String,Symbol}, name::Union{String,Symbol}, options::Union{String,Symbol} = "") :: Nothing
-  SearchLight.query("ALTER TABLE $table_name DROP COLUMN $name $options", internal = true)
+  SearchLight.query("ALTER TABLE $table_name DROP COLUMN $name $options")
 
   nothing
 end
 
 
 function SearchLight.Migration.remove_index(name::Union{String,Symbol}, options::Union{String,Symbol} = "") :: Nothing
-  SearchLight.query("DROP INDEX $name $options", internal = true)
+  SearchLight.query("DROP INDEX $name $options")
 
   nothing
 end
 
 
 function SearchLight.Migration.create_sequence(name::Union{String,Symbol}) :: Nothing
-  SearchLight.query("CREATE SEQUENCE $name", internal = true)
+  SearchLight.query("CREATE SEQUENCE $name")
 
   nothing
 end
@@ -410,7 +380,7 @@ end
 
 
 function SearchLight.Migration.remove_sequence(name::Union{String,Symbol}, options::Union{String,Symbol}) :: Nothing
-  SearchLight.query("DROP SEQUENCE $name $options", internal = true)
+  SearchLight.query("DROP SEQUENCE $name $options")
 
   nothing
 end
