@@ -125,7 +125,7 @@ end
 
 function SearchLight.query(sql::String, conn::DatabaseHandle = SearchLight.connection()) :: DataFrames.DataFrame
   @info sql
-  @time result = LibPQ.execute(conn, sql)
+  result = LibPQ.execute(conn, sql)
 
   if LibPQ.error_message(result) != ""
     throw(SearchLight.Exceptions.DatabaseAdapterException("$(string(LibPQ)) error: $(LibPQ.errstring(result)) [$(LibPQ.errcode(result))]"))
