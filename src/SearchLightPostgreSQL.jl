@@ -405,6 +405,30 @@ function SearchLight.Migration.column_id_sequence(table_name::Union{String,Symbo
 end
 
 
+#### TRANSACTIONS ####
+
+
+function SearchLight.Transactions.begin_transaction() :: Nothing
+  SearchLight.query("BEGIN")
+
+  nothing
+end
+
+
+function SearchLight.Transactions.commit_transaction() :: Nothing
+  SearchLight.query("COMMIT")
+
+  nothing
+end
+
+
+function SearchLight.Transactions.rollback_transaction() :: Nothing
+  SearchLight.query("ROLLBACK")
+
+  nothing
+end
+
+
 #### GENERATOR ####
 
 
