@@ -113,7 +113,7 @@ Escapes the value `v` using native features provided by the database backend if 
 julia>
 ```
 """
-function SearchLight.escape_value(v::T, conn::DatabaseHandle = SearchLight.connection())::T where {T}
+function SearchLight.escape_value(v::T, _ = nothing)::T where {T} # TODO: deprecate in next major version
   isa(v, Number) ? v : "E'$(replace(string(v), "'"=>"\\'"))'"
 end
 
