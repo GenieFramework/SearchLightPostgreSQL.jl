@@ -15,5 +15,5 @@ TestSetExtensions = "98d24dd4-01ad-11ea-1b02-c9a08f80db04"
 [compat]
 DataFrames = "1"
 LibPQ = "1"
-SearchLight = "1, 0.22"
+SearchLight = "2"
 julia = "1"
