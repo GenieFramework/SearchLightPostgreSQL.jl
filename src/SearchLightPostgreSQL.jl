@@ -293,33 +293,13 @@ Runs a SQL DB query that creates the table `table_name` with the structure neede
 The table should contain one column, `version`, unique, as a string of maximum 30 chars long.
 """
 function SearchLight.Migration.create_migrations_table(table_name::String = SearchLight.config.db_migrations_table_name) :: Nothing
-  
+
   queryString = string("select table_name from information_schema.tables where table_name = '$table_name'")
   if isempty(SearchLight.query(queryString))
     SearchLight.query("CREATE TABLE $table_name (version varchar(30))", internal = true)
     @info "Created table $table_name"
   else
     @info "Migration table exists."
-  end
-
-  nothing
-end
-
-"""
-    drop_migrations_table(table_name::String)::Nothing
-
-Runs a SQL DB query that drops the table `table_name`.
-"""
-function SearchLight.Migration.drop_migrations_table(table_name::String = SearchLight.config.db_migrations_table_name) :: Nothing
-  
-  
-  queryString = string("select table_name from information_schema.tables where table_name = '$table_name'")
-  if !isempty(SearchLight.query(queryString)) 
-
-      SearchLight.query("DROP TABLE $table_name")
-      @info "Droped table $table_name"
-  else
-      @info "Nothing to drop"
   end
 
   nothing
@@ -470,4 +450,3 @@ function SearchLight.Generator.FileTemplates.adapter_default_config()
 end
 
 end
-
