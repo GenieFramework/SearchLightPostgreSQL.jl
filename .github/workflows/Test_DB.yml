@@ -26,6 +26,10 @@ jobs:
           --health-retries 5
 
     steps:
+      - name: Create a database
+        run: |
+            sudo -u postgres createdb --owner=postgres searchlight_test
+            PGPASSWORD=postgres psql --username=postgres --host=postgres --list searchlight_test
       - uses: julia-actions/setup-julia@latest
         with:
           version: '1.6.4'
