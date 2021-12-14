@@ -122,10 +122,6 @@ end
 # Query execution
 #
 
-function SearchLight.query(sql::String; internal = true):: DataFrames.DataFrame
-    SearchLight.query(sql)
-end
-
 
 function SearchLight.query(sql::String, conn::DatabaseHandle = SearchLight.connection()) :: DataFrames.DataFrame
   @info sql
@@ -300,7 +296,7 @@ function SearchLight.Migration.create_migrations_table(table_name::String = Sear
 
   queryString = string("select table_name from information_schema.tables where table_name = '$table_name'")
   if isempty(SearchLight.query(queryString))
-    SearchLight.query("CREATE TABLE $table_name (version varchar(30))", internal = true)
+    SearchLight.query("CREATE TABLE $table_name (version varchar(30))")
     @info "Created table $table_name"
   else
     @info "Migration table exists."
