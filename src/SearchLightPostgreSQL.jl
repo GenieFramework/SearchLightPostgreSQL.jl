@@ -122,6 +122,10 @@ end
 # Query execution
 #
 
+function SearchLight.query(sql::String; internal = true):: DataFrames.DataFrame
+    SearchLight.query(sql)
+end
+
 
 function SearchLight.query(sql::String, conn::DatabaseHandle = SearchLight.connection()) :: DataFrames.DataFrame
   @info sql
