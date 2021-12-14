@@ -35,13 +35,14 @@ jobs:
           arch: 'x64'
       - name: Install SearchLight and SearchLightPostgreSQL
         run: |
+          pwd
           julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLight.jl.git")'
           julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLightPostgreSQL.jl.git")'
         shell: bash
       - name: Start testing Searchlight
         env:
           # The hostname used to communicate with the PostgreSQL service container
-          POSTGRES_HOST: postgres
+          POSTGRES_HOST: localhost
           # The default PostgreSQL port
           POSTGRES_PORT: 5432
         run: |
