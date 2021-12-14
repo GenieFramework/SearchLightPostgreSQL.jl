@@ -43,6 +43,6 @@ jobs:
           julia -e 'import Pkg; Pkg.add("SafeTestsets")'
           julia -e 'cd(joinpath(pwd(),"test"))'
           julia -e 'using Pkg; Pkg.activate(".")'
-          juila -e 'using Pkg; Pkg.resolve()'
+          julia -e 'using Pkg; Pkg.resolve()'
         shell: bash
       - uses: julia-actions/julia-runtest@master
