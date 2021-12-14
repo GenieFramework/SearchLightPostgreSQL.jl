@@ -29,6 +29,9 @@ jobs:
           - 5432:5432
 
     steps:
+      - uses: actions/checkout@v2
+        with:
+        path: ''
       - uses: julia-actions/setup-julia@latest
         with:
           version: '1.6.4'
