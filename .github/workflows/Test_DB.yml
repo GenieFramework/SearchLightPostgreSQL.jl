@@ -50,5 +50,6 @@ jobs:
         run: |
           julia -e 'println(pwd())'
           julia -e 'using Pkg; Pkg.activate(".")'
+          julia -e 'using Pkg; Pkg.instantiate()'
           julia -e 'include("/__w/SearchLightPostgreSQL.jl/SearchLightPostgreSQL.jl/tests/runtests.jl")'
         shell: bash
