@@ -34,16 +34,17 @@ jobs:
         with:
           version: '1.6.4'
           arch: 'x64'
-      - name: Install SearchLight and SearchLightPostgreSQL
       - uses: julia-actions/julia-buildpkg@master
+      - name: Install SearchLight and SearchLightPostgreSQL
         run: |
           pwd
           julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLight.jl.git")'
           julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLightPostgreSQL.jl.git")'
           julia -e 'import Pkg; Pkg.add("SafeTestsets")'
         shell: bash
+      - uses: julia-actions/julia-runtest@master
       - name: Testing the PostgresSQL tests
-      - uses: julia-actions/julia-runtest@master         # The hostname used to communicate with the PostgreSQL service container
+             # The hostname used to communicate with the PostgreSQL service container
         run: |
           julia -e 'println(pwd())'
           julia -e 'using Pkg; Pkg.activate(".")'
