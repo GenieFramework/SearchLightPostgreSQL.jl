@@ -47,5 +47,6 @@ jobs:
           POSTGRES_PORT: 5432
         run: |
           julia -e 'println(pwd())'
-          julia -e 'println(readdir("/__w/SearchLightPostgreSQL.jl"))'
+          julia -e 'using Pkg; Pkg.activate(".")'
+          julia -e 'println(readdir("/__w/"))'
         shell: bash
