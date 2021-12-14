@@ -47,6 +47,5 @@ jobs:
           POSTGRES_PORT: 5432
         run: |
           julia -e 'println(pwd())'
-          julia -e 'println("Here is the mouse she comes out of her house")'
-          julia -e 'include("/__w/SearchLightPostgreSQL.jl/SearchLightPostgreSQL.jl/tests/runtests.jl")'
+          julia -e 'println(readdir("/home/runner/work/SearchLightPostgreSQL.jl/SearchLightPostgreSQL.jl/tests"))'
         shell: bash
