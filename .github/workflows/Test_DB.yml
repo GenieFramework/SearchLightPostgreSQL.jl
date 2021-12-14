@@ -39,7 +39,7 @@ jobs:
           pwd
           julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLight.jl.git")'
           julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLightPostgreSQL.jl.git")'
-          julia -e 'using Pkg; Pkg.add("TestSetExtensions")'
+          julia -e 'using Pkg; Pkg.add(url="https://github.com/ssfrr/TestSetExtensions.jl.git")'
         shell: bash
       - name: Start testing Searchlight
         env:
