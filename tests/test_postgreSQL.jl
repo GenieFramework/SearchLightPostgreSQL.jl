@@ -23,35 +23,35 @@ end
     connection_file = "postgres_connection.yml"
 
     conn_info_postgres = SearchLight.Configuration.load(connection_file)
-using Test, TestSetExtensions, SafeTestsets
+    using Test, TestSetExtensions, SafeTestsets
 
-module TestSetupTeardown
+    module TestSetupTeardown
 
-  using SearchLight
-  using SearchLightPostgreSQL
+    using SearchLight
+    using SearchLightPostgreSQL
 
-  export prepareDbConnection, tearDown
+    export prepareDbConnection, tearDown
 
-  connection_file = "postgres_connection.yml"
+    connection_file = "postgres_connection.yml"
 
-  function prepareDbConnection()
-      
-      conn_info_postgres = SearchLight.Configuration.load(connection_file)
-      conn = SearchLight.connect(conn_info_postgres)
+    function prepareDbConnection()
 
-      return conn
-  end
+        conn_info_postgres = SearchLight.Configuration.load(connection_file)
+        conn = SearchLight.connect(conn_info_postgres)
 
-  function tearDown(conn)
-    if conn !== nothing
-        ######## Dropping used tables
-
-        SearchLight.disconnect(conn)
-        rm(SearchLight.config.db_migrations_folder,force=true, recursive=true)
+        return conn
     end
-  end
 
-end
+    function tearDown(conn)
+        if conn !== nothing
+            ######## Dropping used tables
+
+            SearchLight.disconnect(conn)
+            rm(SearchLight.config.db_migrations_folder,force=true, recursive=true)
+        end
+    end
+
+    end
 
 
 @safetestset "Core features PostgreSQL" begin
@@ -81,7 +81,7 @@ end;
 
 
     conn = prepareDbConnection()
-    
+
     infoDB = LibPQ.conninfo(conn)
 
     keysInfo = Dict{String, String}()
@@ -120,10 +120,10 @@ end;
     queryString = string("select table_name from information_schema.tables where table_name = '",SearchLight.SEARCHLIGHT_MIGRATIONS_TABLE_NAME,"'")
 
     @test isempty(SearchLight.query(queryString,conn)) == true
-    
+
     #create migrations_table
     SearchLight.Migration.create_migrations_table()
- 
+
     @test Array(SearchLight.query(queryString,conn))[1] == SearchLight.SEARCHLIGHT_MIGRATIONS_TABLE_NAME
 
     ############# teardown ###############
@@ -131,7 +131,7 @@ end;
       ############ drop migrations_table ######################
       queryString = string("select table_name from information_schema.tables where table_name = '", SearchLight.SEARCHLIGHT_MIGRATIONS_TABLE_NAME , "'" )
       resQuery = SearchLight.query(queryString)
-      if size(resQuery,1) >  0 
+      if size(resQuery,1) >  0
         queryString = string("drop table ", SearchLight.SEARCHLIGHT_MIGRATIONS_TABLE_NAME)
         resQuery = SearchLight.query(queryString)
       end
@@ -175,8 +175,8 @@ end
 
     ## create migrations_table
     SearchLight.Migration.create_migrations_table()
-    
-    ## make Table "Book" 
+
+    ## make Table "Book"
     SearchLight.Generator.new_table_migration(Book)
     SearchLight.Migration.up()
 
@@ -196,7 +196,7 @@ end
       SearchLight.Migration.drop_table("books")
       SearchLight.disconnect(conn)
       rm(SearchLight.config.db_migrations_folder,force=true, recursive=true)
-    end 
+    end
 
 
 end
@@ -212,15 +212,15 @@ end
 
   ## create migrations_table
   SearchLight.Migration.create_migrations_table()
-  
-  ## make Table "Book" 
+
+  ## make Table "Book"
   SearchLight.Generator.new_table_migration(Book)
   SearchLight.Migration.up()
 
   testBooks = Book[]
-  
+
   ## prepare the TestBooks
-  for book in TestModels.seed() 
+  for book in TestModels.seed()
     push!(testBooks,Book(title=book[1], author=book[2]))
   end
 
@@ -230,14 +230,14 @@ end
 
   @test size(booksReturn) == (5,)
 
-  ## make Table "BooksWithInterns" 
+  ## make Table "BooksWithInterns"
   SearchLight.Generator.new_table_migration(BookWithInterns)
   SearchLight.Migration.up()
 
   booksWithInterns = BookWithInterns[]
 
   ## prepare the TestBooks
-  for book in TestModels.seed() 
+  for book in TestModels.seed()
     push!(booksWithInterns,BookWithInterns(title=book[1], author=book[2]))
   end
 
@@ -249,7 +249,7 @@ end
   ############ tearDown ##################
 
   if conn !== nothing
-  
+
     ######## Dropping used tables
     SearchLight.Migration.drop_migrations_table()
     SearchLight.Migration.drop_table(lowercase("Books"))
@@ -257,7 +257,7 @@ end
 
     SearchLight.disconnect(conn)
     rm(SearchLight.config.db_migrations_folder,force=true, recursive=true)
-  end 
+  end
 
 end
     tearDown(conn)
@@ -282,8 +282,3 @@ end;
     testItem|>save!
 
 end;
-
-
-
-
-  

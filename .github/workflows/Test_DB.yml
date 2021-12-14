@@ -42,6 +42,7 @@ jobs:
           julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLightPostgreSQL.jl.git")'
           julia -e 'import Pkg; Pkg.add("SafeTestsets")'
         shell: bash
+      - name: Testing the PostgresSQL tests
       - uses: julia-actions/julia-runtest@master         # The hostname used to communicate with the PostgreSQL service container
         run: |
           julia -e 'println(pwd())'
