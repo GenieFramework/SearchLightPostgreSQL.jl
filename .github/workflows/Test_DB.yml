@@ -48,9 +48,9 @@ jobs:
           # The default PostgreSQL port
           POSTGRES_PORT: 5432
         run: |
-          julia -e 'import Pkg; Pkg.add("SafeTestsets")'
           julia -e 'println(pwd())'
           julia -e 'using Pkg; Pkg.activate(".")'
           julia -e 'using Pkg; Pkg.instantiate()'
+          julia -e 'import Pkg; Pkg.add("SafeTestsets")'
           julia -e 'include("/__w/SearchLightPostgreSQL.jl/SearchLightPostgreSQL.jl/tests/runtests.jl")'
         shell: bash
