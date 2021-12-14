@@ -39,7 +39,7 @@ jobs:
           pwd
           julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLight.jl.git")'
           julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLightPostgreSQL.jl.git")'
-          julia -e 'using Pkg; Pkg.add(url="https://github.com/ssfrr/TestSetExtensions.jl.git")'
+
         shell: bash
       - name: Start testing Searchlight
         env:
@@ -48,6 +48,7 @@ jobs:
           # The default PostgreSQL port
           POSTGRES_PORT: 5432
         run: |
+          julia -e 'import Pkg; Pkg.add("SafeTestsets")'
           julia -e 'println(pwd())'
           julia -e 'using Pkg; Pkg.activate(".")'
           julia -e 'using Pkg; Pkg.instantiate()'
