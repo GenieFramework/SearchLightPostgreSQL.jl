@@ -2,6 +2,7 @@ using Pkg
 
 using Test, TestSetExtensions, SafeTestsets
 using SearchLight
+using SearchLightPostgreSQL
 
 # @testset ExtendedTestSet "SearchLight PostgreSQL adapter tests" begin
 #   @includetests ARGS
