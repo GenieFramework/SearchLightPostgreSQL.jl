@@ -49,5 +49,5 @@ jobs:
         run: |
           julia -e 'println(pwd())'
           julia -e 'using Pkg; Pkg.activate(".")'
-          julia -e 'println(readdir("/__w/"))'
+          julia -e 'println(readdir("/__w/SearchLightPostgreSQL.jl/SearchLightPostgreSQL.jl"))'
         shell: bash
