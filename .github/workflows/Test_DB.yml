@@ -31,24 +31,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@latest
-      - uses: julia-actions/julia-buildpkg@master
-      - uses: julia-actions/julia-runtest@master
         with:
           version: '1.6.4'
           arch: 'x64'
       - name: Install SearchLight and SearchLightPostgreSQL
+      - uses: julia-actions/julia-buildpkg@master
         run: |
           pwd
           julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLight.jl.git")'
           julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLightPostgreSQL.jl.git")'
           julia -e 'import Pkg; Pkg.add("SafeTestsets")'
         shell: bash
-      - name: Start testing Searchlight
-        env:
-          # The hostname used to communicate with the PostgreSQL service container
-          POSTGRES_HOST: localhost
-          # The default PostgreSQL port
-          POSTGRES_PORT: 5432
+      - uses: julia-actions/julia-runtest@master         # The hostname used to communicate with the PostgreSQL service container
         run: |
           julia -e 'println(pwd())'
           julia -e 'using Pkg; Pkg.activate(".")'
