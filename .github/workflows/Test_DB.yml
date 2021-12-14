@@ -24,13 +24,11 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
 
     steps:
-      - name: Create a database
-        run: |
-              sudo -u postgres createdb --owner=postgres searchlight_test
-              PGPASSWORD=postgres psql --username=postgres --host=postgres --list searchlight_test
-        shell: bash
       - uses: julia-actions/setup-julia@latest
         with:
           version: '1.6.4'
@@ -49,4 +47,5 @@ jobs:
         run: |
           julia -e 'println(pwd())'
           julia -e 'println("Here is the mouse she comes out of her house")'
+          julia -e 'include("tests/runtests.jl")'
         shell: bash
