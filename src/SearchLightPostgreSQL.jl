@@ -35,7 +35,7 @@ const TYPE_MAPPINGS = Dict{Symbol,Symbol}( # Julia / Postgres
   :date       => :DATE,
   :binary     => :BLOB,
   :boolean    => :BOOLEAN,
-  :bool       => :BOOLEAN
+  :bool       => :BOOLEAN 
 )
 
 const CONNECTIONS = DatabaseHandle[]
