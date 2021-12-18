@@ -30,6 +30,7 @@ const TYPE_MAPPINGS = Dict{Symbol,Symbol}( # Julia / Postgres
   :decimal    => :DECIMAL,
   :datetime   => :DATETIME,
   :timestamp  => :INTEGER,
+  :ZonedDateTime => :timestamptz,
   :time       => :TIME,
   :date       => :DATE,
   :binary     => :BLOB,
