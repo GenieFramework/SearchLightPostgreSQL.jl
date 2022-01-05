@@ -294,7 +294,7 @@ The table should contain one column, `version`, unique, as a string of maximum 3
 """
 function SearchLight.Migration.create_migrations_table(table_name::String = SearchLight.config.db_migrations_table_name) :: Nothing
 
-  queryString = string("select table_name from information_schema.tables where table_name = '$table_name'")
+  queryString = "SELECT table_name FROM information_schema.tables WHERE table_name = '$table_name'"
   if isempty(SearchLight.query(queryString))
     SearchLight.query("CREATE TABLE $table_name (version varchar(30))")
     @info "Created table $table_name"

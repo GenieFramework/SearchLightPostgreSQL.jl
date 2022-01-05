@@ -72,11 +72,6 @@ module TestModels
   end
 
   mutable struct BookWithInterns <: AbstractModel
-    ### INTERNALS
-    _table_name::String
-    _id::String
-    _serializable::Vector{Symbol}
-
     ### FIELDS
     id::DbId
     title::String

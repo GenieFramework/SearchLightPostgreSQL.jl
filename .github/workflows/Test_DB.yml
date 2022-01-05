@@ -38,10 +38,9 @@ jobs:
       - name: Install SearchLight and SearchLightPostgreSQL
         run: |
           pwd
-          julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLight.jl.git")'
-          julia -e 'using Pkg; Pkg.add(url="https://github.com/FrankUrbach/SearchLightPostgreSQL.jl.git")'
+          julia -e 'using Pkg; Pkg.add(url="https://github.com/GenieFramework/SearchLight.jl.git")'
+          julia -e 'using Pkg; Pkg.add(url="https://github.com/GenieFramework/SearchLightPostgreSQL.jl.git")'
           julia -e 'import Pkg; Pkg.add("SafeTestsets")'
-          julia -e 'cd(joinpath(pwd(),"test"))'
           julia -e 'using Pkg; Pkg.activate(".")'
           julia -e 'using Pkg; Pkg.resolve()'
         shell: bash
