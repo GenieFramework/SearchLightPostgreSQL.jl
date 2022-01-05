@@ -1,5 +1,8 @@
 using SearchLight, SearchLight.Migrations, SearchLight.Relationships
 
+#To reach the db/migrations folder change the directory is necessary
+cd(@__DIR__)
+
 connection_file = joinpath(@__DIR__,"postgres_connection.yml")
 conn_info_postgres = SearchLight.Configuration.load(connection_file)
 const conn = SearchLight.connect(conn_info_postgres)
