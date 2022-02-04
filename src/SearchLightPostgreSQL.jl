@@ -432,15 +432,23 @@ end
 #### GENERATOR ####
 
 
-function SearchLight.Generator.FileTemplates.adapter_default_config()
+function SearchLight.Generator.FileTemplates.adapter_default_config(; database = SearchLight.config.app_env,
+                                                                      host = "127.0.0.1",
+                                                                      port = 5432,
+                                                                      username = "postgres",
+                                                                      password = "",
+                                                                      env = SearchLight.config.app_env,
+                                                                      env_val = """ENV["GENIE_ENV"]""") :: String
   """
-  $(SearchLight.config.app_env):
+  env: $env_val
+
+  $env:
     adapter:  PostgreSQL
-    host:     127.0.0.1
-    port:     5432
-    database: yourdb
-    username: root
-    password: ""
+    host:     $host
+    port:     $port
+    database: $database
+    username: $username
+    password: $password
   """
 end
 
