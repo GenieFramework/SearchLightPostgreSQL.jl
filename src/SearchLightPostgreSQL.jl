@@ -38,7 +38,7 @@ const TYPE_MAPPINGS = Dict{Symbol,Symbol}( # Julia / Postgres
   :tstzrange  => :TSTZRANGE,
   :time       => :TIME,
   :date       => :DATE,
-  :binary     => :BLOB,
+  :binary     => :BYTEA,
   :boolean    => :BOOLEAN,
   :bool       => :BOOLEAN
 )
