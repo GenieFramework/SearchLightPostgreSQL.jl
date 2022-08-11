@@ -59,11 +59,14 @@ Connects to the database and returns a handle.
 function SearchLight.connect(conn_data::Dict = SearchLight.config.db_config_settings) :: DatabaseHandle
   dns = String[]
 
-  for key in ["host", "hostaddr", "port", "database", "username", "password", "passfile", "connect_timeout", "client_encoding"]
+  for key in ["host", "hostaddr", "port", "password", "passfile", "connect_timeout", "client_encoding"]
     get!(conn_data, key, get(ENV, "SEARCHLIGHT_$(uppercase(key))", nothing))
     conn_data[key] !== nothing && push!(dns, string("$key=", conn_data[key]))
   end
-
+    
+  haskey(conn_data, "database") && push!(dns, string("dbname=", conn_data["database"]
+  haskey(conn_data, "username") && push!(dns, string("user=", conn_data["username"]))
+      
   push!(CONNECTIONS, LibPQ.Connection(join(dns, " ")))[end]
 end
 
