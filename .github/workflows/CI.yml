@@ -8,7 +8,15 @@ on:
 jobs:
   runner-job:
     # You must use a Linux environment when using service containers or container jobs
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        julia-version: ['1.6', '1.7', '1.8', 'nightly']
+        julia-arch: [x64, x86]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        exclude:
+          - os: macOS-latest
+            julia-arch: x86
 
     # Service containers to run with `runner-job`
     services:
