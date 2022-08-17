@@ -1,7 +1,7 @@
 name = "SearchLightPostgreSQL"
 uuid = "4327cdd6-4902-11ea-0272-430cea0431bd"
 authors = ["Adrian Salceanu <e@essenciary.com>"]
-version = "2.3.1"
+version = "2.3.2"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
