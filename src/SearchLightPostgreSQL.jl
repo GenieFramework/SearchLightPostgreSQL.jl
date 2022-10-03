@@ -63,16 +63,13 @@ function SearchLight.connect(conn_data::Dict = SearchLight.config.db_config_sett
     get!(conn_data, key, get(ENV, "SEARCHLIGHT_$(uppercase(key))", nothing))
     conn_data[key] !== nothing && push!(dns, string("$key=", conn_data[key]))
   end
-  
+
   get!(conn_data, "database", get(ENV, "SEARCHLIGHT_DATABASE", nothing))
   conn_data["database"] !== nothing && push!(dns, string("dbname=", conn_data["database"]))
-        
+
   get!(conn_data, "username", get(ENV, "SEARCHLIGHT_USERNAME", nothing))
   conn_data["username"] !== nothing && push!(dns, string("user=", conn_data["username"]))
-  
-  # haskey(conn_data, "database") && push!(dns, string("dbname=", conn_data["database"]))
-  # haskey(conn_data, "username") && push!(dns, string("user=", conn_data["username"]))
-      
+
   push!(CONNECTIONS, LibPQ.Connection(join(dns, " ")))[end]
 end
 
