@@ -364,8 +364,8 @@ function SearchLight.Migration.remove_column(table_name::Union{String,Symbol}, n
 end
 
 
-function SearchLight.Migration.remove_index(_::Union{String,Symbol}, name::Union{String,Symbol}; options::Union{String,Symbol} = "") :: Nothing
-  SearchLight.query("DROP INDEX $name $options")
+function SearchLight.Migration.remove_index!(tablename::Union{String,Symbol}, indexname::Union{String,Symbol}, options::Union{String,Symbol} = "") :: Nothing
+  SearchLight.query("DROP INDEX $indexname $options")
 
   nothing
 end
