@@ -5,12 +5,12 @@ version = "2.3.3"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 LibPQ = "194296ae-ab2e-5f79-8cd4-7183a0a5a0d1"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 SearchLight = "340e8cb6-72eb-11e8-37ce-c97ebeb32050"
 
 [compat]
-DataFrames = "1"
 LibPQ = "1"
 SearchLight = "2.9"
 julia = "1"

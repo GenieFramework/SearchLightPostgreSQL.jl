@@ -301,9 +301,14 @@ Runs a SQL DB query that creates the table `table_name` with the structure neede
 The table should contain one column, `version`, unique, as a string of maximum 30 chars long.
 """
 function SearchLight.Migration.create_migrations_table(table_name::String = SearchLight.config.db_migrations_table_name) :: Nothing
-  SearchLight.query("CREATE TABLE $table_name (version varchar(30))")
 
-  @info "Created table $table_name"
+  queryString = "SELECT table_name FROM information_schema.tables WHERE table_name = '$table_name'"
+  if isempty(SearchLight.query(queryString))
+    SearchLight.query("CREATE TABLE $table_name (version varchar(30))")
+    @info "Created table $table_name"
+  else
+    @info "Migration table exists."
+  end
 
   nothing
 end

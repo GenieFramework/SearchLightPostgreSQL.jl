@@ -1,0 +1,13 @@
+env: dev
+
+dev:
+  adapter:  PostgreSQL
+  host:     postgres
+  port:     5432
+  database: postgres
+  username: postgres
+  password: postgres
+
+  config:
+    log_queries: true
+    log_level: :debug
